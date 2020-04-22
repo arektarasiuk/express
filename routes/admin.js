@@ -15,16 +15,37 @@ router.all('*', (req, res, next) => {
 
 /* GET home page. */
 router.get('/', (req, res) => {
-    const newsData = new News({
-        title: 'Tytuł testowy',
-        description: 'Opis'
+    News.find({}, (err, data) => {
+        res.render('admin/index', { title: 'Admin', data });
     });
+});
+
+router.get('/news/add', (req, res) => {
+    res.render('admin/news-form', { title: 'Dodaj News', body: {}, errors: {} });
+});
+
+router.post('/news/add', (req, res) => {
+    const body = req.body;
+
+    const newsData = new News(body);
+    const errors = newsData.validateSync();
+
 
     newsData.save((err) => {
-        console.log(err);
+        if (err) {
+            res.render('admin/news-form', { title: 'Dodaj News', errors, body });
+            return;
+        }
+        res.redirect('/admin');
+    });
+});
+
+router.get('/news/delete/:id', (req, res) => {
+    News.findByIdAndDelete(req.params.id, (err) => {
+        res.redirect('/admin')
     })
 
-    res.render('admin', { title: 'Admin' });
+
 });
 
 module.exports = router;
